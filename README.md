@@ -4,6 +4,7 @@
 # Requirements
 - PHP >= 7.4
 - Monolog >= 1.3
+- Tracy >= 2.4
 
 # Installation
 ```
