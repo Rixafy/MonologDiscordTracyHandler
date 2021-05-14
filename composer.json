@@ -1,0 +1,24 @@
+{
+  "name": "rixafy/monolog-discord-tracy-handler",
+  "description": "Monolog discord handler for Nette Framework with log file attachments",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Rixafy",
+      "email": "rixafy@gmail.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "require": {
+    "php": ">=7.4",
+    "ext-curl": "*",
+    "lefuturiste/monolog-discord-handler": "^0.3",
+    "tracy/tracy": "^2.0.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Rixafy\\DiscordTracy\\": "src"
+    }
+  }
+}
