@@ -1,6 +1,10 @@
 # Monolog Discord handler with Tracy support
 📝 Extended library `lefuturiste/monolog-discord-handler` with support of sending generated log files from Tracy (Nette Framework logging library) as an attachments to Discord channel
 
+# Requirements
+- PHP >= 7.4
+- Monolog >= 1.3
+
 # Installation
 ```
 composer require rixafy/monolog-discord-tracy-handler
