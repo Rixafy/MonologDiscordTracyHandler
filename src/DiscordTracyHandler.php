@@ -5,39 +5,40 @@ declare(strict_types=1);
 namespace Rixafy\DiscordTracy;
 
 use DiscordHandler\DiscordHandler;
+use Throwable;
 use Tracy\Debugger;
+use Tracy\ILogger;
+use Tracy\Logger;
 
 class DiscordTracyHandler extends DiscordHandler
 {
-    private bool $sendFile = false;
+    private array $records = [];
 
     protected function write(array $record): void
     {
         parent::write($record);
-        $this->sendFile = true;
+        $this->records[] = $record;
     }
 
     public function __destruct()
     {
-        if ($this->sendFile) {
-            $mask = Debugger::$logDirectory . '/*.html';
-
-            $files = glob($mask);
-            usort($files, function ($x, $y) {
-                return filemtime($y) <=> filemtime($x);
-            });
-
-            $newestFile = $files[0] ?? null;
-            if ($newestFile !== null) {
-                if (filemtime($newestFile) + 5 < time()) {
+        $logger = new Logger(Debugger::$logDirectory);
+        
+        foreach ($this->records as $record) {
+            $exception = $record['context']['exception'] ?? null;
+            if ($exception instanceof Throwable) {
+                $level = constant(ILogger::class . '::' . strtoupper($record['level_name']));
+                if ($level === null) {
                     return;
                 }
 
+                $file = $logger->getExceptionFile($record['context']['exception'], $level);
+                if (!file_exists($file)) {
+                    return;
+                }
+                
+                $fileName = basename($file);
                 foreach ($this->config->getWebHooks() as $webHook) {
-                    $json_data = [
-                        'file' => curl_file_create($newestFile, 'text/html', 'exception.html')
-                    ];
-
                     $curl = curl_init($webHook);
                     curl_setopt($curl, CURLOPT_TIMEOUT, 3);
                     curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 3);
@@ -48,8 +49,9 @@ class DiscordTracyHandler extends DiscordHandler
                     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
                     curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
                     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-                    curl_setopt($curl, CURLOPT_POSTFIELDS, $json_data);
-
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, [
+                        'file' => curl_file_create($file, 'text/html', $fileName)
+                    ]);
                     curl_exec($curl);
                     curl_close($curl);
                 }
