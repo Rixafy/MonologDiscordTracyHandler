@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Rixafy\DiscordTracy;
 
 use DiscordHandler\DiscordHandler;
+use Psr\Log\LogLevel;
 use Throwable;
 use Tracy\Debugger;
-use Tracy\ILogger;
 use Tracy\Logger;
 
 class DiscordTracyHandler extends DiscordHandler
@@ -27,7 +27,7 @@ class DiscordTracyHandler extends DiscordHandler
         foreach ($this->records as $record) {
             $exception = $record['context']['exception'] ?? null;
             if ($exception instanceof Throwable) {
-                $level = constant(ILogger::class . '::' . strtoupper($record['level_name']));
+                $level = constant(LogLevel::class . '::' . strtoupper($record['level_name']));
                 if ($level === null) {
                     return;
                 }
