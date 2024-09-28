@@ -6,21 +6,22 @@ namespace Rixafy\DiscordTracy;
 
 use DiscordHandler\DiscordHandler;
 use GuzzleHttp\Exception\RequestException;
+use Monolog\LogRecord;
 use Throwable;
 use Tracy\Debugger;
 use Tracy\Logger;
 
 class DiscordTracyHandler extends DiscordHandler
 {
-	protected function write(array $record): void
+	protected function write(LogRecord $record): void
 	{
 		try {
 			parent::write($record);
 
 			$logger = new Logger(Debugger::$logDirectory);
-			$exception = $record['context']['exception'] ?? null;
+			$exception = $record->context['exception'] ?? null;
 			if ($exception instanceof Throwable) {
-				$file = $logger->getExceptionFile($record['context']['exception'], strtolower($record['level_name']));
+				$file = $logger->getExceptionFile($record->context['exception'], strtolower($record->level->getName()));
 				if (!file_exists($file)) {
 					Debugger::getBlueScreen()->renderToFile($exception, $file);
 				}
